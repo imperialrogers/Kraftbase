@@ -120,6 +120,7 @@ const giveRatings = asyncHandler( async(req, res)=>{
         let existingUser=await User.findOne({phone});
         if(!existingUser || phone.length!=10) res.status(400).json({msg: "User not found"});
         if(!agentRating || !orderRating) res.status(400).json({msg: "Please enter ratings for agent and orders both"});
+        if(agentRating>5 || agentRating<0 || orderRating>5 || orderRating<0) res.status(400).json({msg: "Please enter ratings in range 0 and 5"});
         //password checking
         const isMatch = await bcryptjs.compare(password, existingUser.password);
         if(!isMatch) res.status(400).json({msg: "Incorrect Credentials"});

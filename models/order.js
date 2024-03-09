@@ -53,12 +53,6 @@ const orderSchema=new mongoose.Schema({
     orderRating:{
         type: Number,
         default: -1,
-        validate:{
-            validator: (value) => {
-                return ((value>=0) && (value<=5));
-            },
-            message: `Please enter a valid rating between 0 and 5`,
-        }
     },
 },
 );
