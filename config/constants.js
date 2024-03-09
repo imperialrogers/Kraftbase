@@ -1,6 +1,6 @@
 const constants={
     //Add your mongoDB URL here
-    dbLink: "mongodb://0.0.0.0:27017",
+    dbLink: "mongodb+srv://test:test@test.ptpy50h.mongodb.net/?retryWrites=true&w=majority&appName=Test",
 }
 
 module.exports=constants;
