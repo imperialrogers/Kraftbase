@@ -14,7 +14,6 @@ application.use(express.json());
 application.use(agentRouter);
 application.use(restaurantRouter);
 application.use(userRouter);
-// application.use(agentRouter);
 
 //Connect DB
 initDatabase().then(()=>{

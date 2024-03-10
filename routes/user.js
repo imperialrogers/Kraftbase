@@ -6,13 +6,13 @@ const userRouter = express.Router();
 
 const {signupUser, orderFood, test, giveRatings} = require("../controllers/userController");
 
-//Signup user
+//Signup new user
 userRouter.post("/api/user/signup",  signupUser);
-//Order Food
+//User Orders Food 
 userRouter.post("/api/user/order",  orderFood);
-//Testt
+//Testt(NOT IN USE/REQUIRED)
 userRouter.post("/api/user/test",  test);
-//give ratings
+//give ratings to the order and agent
 userRouter.post("/api/user/ratings",  giveRatings);
 
 module.exports = userRouter;

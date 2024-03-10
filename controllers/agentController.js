@@ -137,8 +137,8 @@ const updateDeliveryStatus = asyncHandler( async (req, res)=>{
         if(order.agentId!=agentId) return res.status(400).json({msg: "Order has not been assigned to you!"});
         //check if the order is already in the status
         if(order.deliveryStatus==status) return res.status(400).json({msg: "Order is already in "+status+" status"});
+        if(order.deliveryStatus=="cancelled") return res.status(400).json({msg: "Order is already cancelled"});
         if(order.deliveryStatus=="delivered") return res.status(400).json({msg: "Order is already delivered"});
-        if(order.deliveryStatus=="rejected") return res.status(400).json({msg: "Order is already rejected"});
         //Check if the status is valid
         let statuses=['cooking', 'outForDelivery', 'delivered'];
         if(!statuses.includes(status)) return res.status(400).json({msg: "Invalid status"});

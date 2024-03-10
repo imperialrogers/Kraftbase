@@ -19,9 +19,12 @@ const findRestaurantByGSTIN = asyncHandler(
         const {gstin}=req.params;
         const restaurant = await Restaurant.findOne({gstin: gstin});
         try{
+            //Restaurant Found
             if(restaurant){
                 res.status(200).json(restaurant);
-            }else{
+            }
+            //Restaurant not found
+            else{
                 res.status(404).json({message: "Restaurant not found!"});
             }
             } catch (e) {
@@ -75,11 +78,14 @@ const shutterUp = asyncHandler(
         try{
             const restaurant = await Restaurant.findOne({gstin: gstin});
             if(restaurant){
+                //If restaurant is already open
                 if(restaurant.status == 'online') return res.status(400).json({message: "Your Restaurant is already open!"});
+                //Else open the restaurant
                 restaurant.status = 'online';
                 await restaurant.save();
                 res.status(200).json({message: "Your Restaurant is now open!"});
             }
+            //Handle if wrong GSTIN
             else{
                 res.status(400).json({message: "Restaurant not found!"});
             }
@@ -95,13 +101,16 @@ const shutterDown= asyncHandler(
     async (req, res) => {
         const {gstin}=req.body;
         try{
+            //Finding the restaurant
             const restaurant = await Restaurant.findOne({gstin: gstin});
             if(restaurant){
+                //If restaurant is already closed
                 if(restaurant.status == 'offline') return res.status(400).json({message: "Your Restaurant is already closed!"});
                 restaurant.status = 'offline';
                 await restaurant.save();
                 res.status(200).json({message: "Your Restaurant is now closed!"});
             }
+            //Handle if wrong GSTIN
             else{
                 res.status(400).json({message: "Restaurant not found!"});
             }
@@ -120,6 +129,7 @@ const addFoodItem = asyncHandler(
             const restaurant = await Restaurant.findOne({gstin: gstin});
             if(restaurant){
                 const check = await FoodItem.findOne({ name: name, restaurantId: restaurant._id.toString()});
+                //If food item already exists or null values
                 if(check || name == null || description == null || isAvailable == null || isVeg == null) return res.status(400).json({message: "Item Exists with same name or enter valid details!"});
                 let newItem = new FoodItem({
                     restaurantId: restaurant._id.toString(),
@@ -131,7 +141,7 @@ const addFoodItem = asyncHandler(
                 });
                 newItem=await newItem.save();
                 res.status(200).json({message: `Food Item ${name} added successfully to your restaurant ${restaurant.name}`});
-            }
+            } //Handle if wrong GSTIN
             else{
                 res.status(400).json({message: "Please Validate your restaurant!"});
             }
@@ -146,6 +156,7 @@ const addFoodItem = asyncHandler(
 const openRestaurants = asyncHandler(
     async (req, res) => {
         try{
+            //Finding all open restaurants
             const openRestaurants = await Restaurant.find({status: 'online'});
             res.status(200).json(openRestaurants);
         }
@@ -180,10 +191,11 @@ const getAvailableFoodItems = asyncHandler(
         const gstin=String(req.params.gstin);
         try{
             const check = await Restaurant.findOne({gstin: gstin});
+            //If restaurant exists
              if(check!=null){
                 const allFoodItems = await FoodItem.find({isAvailable: true});
                 res.status(200).json(allFoodItems);
-            }
+            }//If restaurant not found
             else{
                 res.status(404).json({message: "Requested Restaurant Not Found!"});
             }
@@ -201,7 +213,9 @@ const updateFoodItem = asyncHandler(
         try{
             const foodItem = await FoodItem.findOne({_id: id.toString(), restaurantId: restaurantId.toString()});
             if(foodItem){
+                //If no field is updated
                 if(name == null && price == null && description == null && isAvailable == null && isVeg == null) return res.status(400).json({message: "Please update atleast one of the fields!"});
+                //Else update the fields entered by user
                 if(name)foodItem.name = name;
                 if(price)foodItem.price = price;
                 if(description)foodItem.description = description;
@@ -225,8 +239,10 @@ const getAllOrders = asyncHandler(
     async(req, res)=>{
         try{
             const restaurantId = req.params.restaurantId;
+            //If no restaurant Id
             if(!restaurantId) return res.status(400).json({message: "Please enter a valid restaurant Id!"});
             const allOrders = await Order.find({restaurantId: restaurantId});
+            //If no orders found
             if(allOrders.length==0) return res.status(400).json({message: "No Orders Found for your restaurant yet!"});
             return res.json(allOrders);
         }
@@ -239,16 +255,18 @@ const getAllOrders = asyncHandler(
 //Set Order Status
 const setOrderStatus = asyncHandler(
     async(req, res)=>{
+        //List of valid statuses
         let statuses=['orderPlaced', 'accepted', 'rejected'];
         try {
             const {status, orderId, restaurantId} = req.body;
             const restaurant = await Restaurant.findById(restaurantId);
+            //Handle for unauthorized restaurant
             if(!restaurant) return res.status(400).json({message: "Unauthorized!"});
+            //Handle for invalid status
             if(!statuses.includes(status)) return res.status(400).json({message: "Please select a valid status!"});
             const order = await Order.findById(orderId);
             //cant modify once order rejected
-            if(order.orderStatus=='rejected') return res.status(400).json({message: "Order already rejected!"});
-            if(order.orderStatus=='accepted' && status=='accepted') return res.status(400).json({message: "Order already accepted!"});
+            if(order.orderStatus=='rejected' || order.orderStatus=='accepted') return res.status(400).json({message: `Order already ${order.orderStatus}!`});
             order.orderStatus=status;
             //if rejected update status
             if(status=='rejected'){

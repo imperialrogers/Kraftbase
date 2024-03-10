@@ -8,7 +8,7 @@ const connectDB = async () => {
             console.log("Connection Established With MONGODB Successfully");
         }).catch(err => {
             console.log(`(Error) Some ERROR OCCURRED: ${err}`);
-            // process.exit(1);
+            process.exit(1);
         });
     } catch (error) {
         console.log(error);

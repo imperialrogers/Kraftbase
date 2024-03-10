@@ -51,7 +51,7 @@ const signupUser = asyncHandler( async(req, res)=>{
 const test=asyncHandler(async(req,res)=>{
     try {
         const {phone, password}=req.body;
-        //VALIDATION:Checking for existing user
+        /******************wrong credentials handled******************/
         let existingUser=await User.findOne({phone:phone});
         if(!existingUser || phone.length!=10){
             res.status(400).json({msg: "User not found"});
@@ -60,6 +60,7 @@ const test=asyncHandler(async(req,res)=>{
         if (!isMatch) {
             return res.status(400).json({ msg: "Incorrect password." });
         }
+        /*************************************************************/
         res.json(existingUser);
     } catch (error) {
         console.log(error.message);
@@ -72,6 +73,7 @@ const orderFood = asyncHandler( async(req, res)=>{
     try {
         //VALIDATION:Checking for existing user
         let existingUser=await User.findOne({phone:phone});
+        /******************wrong credentials handled******************/
         if(!existingUser || phone.length!=10){
             res.status(400).json({msg: "User not found"});
         }
@@ -79,15 +81,18 @@ const orderFood = asyncHandler( async(req, res)=>{
         if (!isMatch) {
             return res.status(400).json({ msg: "Incorrect Credentials." });
         }
-        if(cartItems.length==0) res.status(400).json({msg: "Cart is empty"});
-        let orderItems=[]; // Food ID + quantity
-        let total=0;
-        let sampleFood=await FoodItem.findById(cartItems[0].id);
-        let restaurant=await Restaurant.findById(sampleFood.restaurantId);
+        /*************************************************************/
+        if(cartItems.length==0) res.status(400).json({msg: "Cart is empty"}); //Empty cart
+        let orderItems=[]; // Food ID + quantity table received from frontend
+        let total=0; // Sum of all the items in the cart
+        let sampleFood=await FoodItem.findById(cartItems[0].id); // Get food item
+        let restaurant=await Restaurant.findById(sampleFood.restaurantId); // Get restaurant
         for(let i=0; i<cartItems.length; i++){
             const item=await FoodItem.findById(cartItems[i].id);
             const quantity=cartItems[i].quantity;
             if(item){
+                //Only 100 items can be ordered at a time and from same restaurant
+                // For the scope of this assignment, we are assuming that the user can order from only one restaurant at a time
                 if(quantity>0 && quantity<=100 && restaurant.id==item.restaurantId){
                     orderItems.push({item, quantity});
                     total+=(item.price*quantity);
@@ -99,6 +104,7 @@ const orderFood = asyncHandler( async(req, res)=>{
                 res.status(400).json({msg: `Food Item for ${cartItems[i].id} not found`});
             }
         }
+        //Create new order
         let order = new Order({
             userId:existingUser._id.toString(),
             restaurantId: restaurant._id.toString(),
