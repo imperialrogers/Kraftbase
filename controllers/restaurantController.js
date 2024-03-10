@@ -130,7 +130,8 @@ const addFoodItem = asyncHandler(
             if(restaurant){
                 const check = await FoodItem.findOne({ name: name, restaurantId: restaurant._id.toString()});
                 //If food item already exists or null values
-                if(check || name == null || description == null || isAvailable == null || isVeg == null) return res.status(400).json({message: "Item Exists with same name or enter valid details!"});
+                if(check || name == null || description == null || isAvailable == null || isVeg == null || price<=50 || price>10000 
+                    || name.length<5 || description.length<5) return res.status(400).json({message: "Item Exists with same name or enter valid details!"});
                 let newItem = new FoodItem({
                     restaurantId: restaurant._id.toString(),
                     name: name,
@@ -193,7 +194,7 @@ const getAvailableFoodItems = asyncHandler(
             const check = await Restaurant.findOne({gstin: gstin});
             //If restaurant exists
              if(check!=null){
-                const allFoodItems = await FoodItem.find({isAvailable: true});
+                const allFoodItems = await FoodItem.find({isAvailable: true, restaurantId: check._id.toString()});
                 res.status(200).json(allFoodItems);
             }//If restaurant not found
             else{
